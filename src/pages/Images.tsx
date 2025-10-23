@@ -38,18 +38,18 @@ export const Images = () => {
   };
 
   return (
-    <Box className="min-h-screen bg-black">
+    <Box className="min-h-screen bg-black mt-[100px]">
       <Container maxWidth="xl" className="py-8">
         <Box className="mb-8">
           <Typography variant="h3" className="font-bold text-white mb-2">
-            📸 TOP Posts Gallery
+            📸 TOP Images
           </Typography>
           <Typography variant="body1" className="text-gray-400">
             Browse exclusive photos from top creators
           </Typography>
         </Box>
 
-        <ImageList variant="masonry" cols={3} gap={16}>
+        <ImageList variant="masonry" cols={3} gap={16} sx={{ mt: 2, pt: 2, width: '95%', mx: 'auto' }}>
           {MOCK_IMAGES.map((item) => {
             const isLiked = likedImages.has(item.id);
             const currentLikes = item.likes + (isLiked && !item.isLiked ? 1 : 0) - (!isLiked && item.isLiked ? 1 : 0);
@@ -65,7 +65,7 @@ export const Images = () => {
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   position: 'relative',
                   '&:hover': {
-                    transform: 'translateY(-8px) scale(1.02)',
+                    transform: 'translateY(-2px) scale(1.005)',
                     boxShadow: '0 20px 40px rgba(239, 68, 68, 0.3)',
                     borderColor: '#ef4444',
                     '& img': {
