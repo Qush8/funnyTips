@@ -21,21 +21,28 @@ import {
   Add,
   Lock,
   Tag,
-  Image,
   TextFields,
   CloudUpload,
   Delete,
 } from '@mui/icons-material';
+import { useMutation } from '@tanstack/react-query';
+import { file as fileAPI, models } from '../../lib/api';
+import { showToast } from '../../utils/toast';
 
 interface CreatePostProps {
-  onSubmit: (postData: any) => void;
   onCancel: () => void;
 }
 
-const CreatePostForm: React.FC<CreatePostProps> = ({ onSubmit, onCancel }) => {
+interface UploadedImage {
+  file: File;
+  preview: string;
+  blurIntensity: number;
+  uploadedUrl?: string;
+}
+
+const CreatePostForm: React.FC<CreatePostProps> = ({ onCancel }) => {
   const [formData, setFormData] = useState({
     access_level: 'free',
-    blur_intensity: 0,
     blurred_media_urls: [] as string[],
     content: '',
     content_visibility: 'hidden',
@@ -50,11 +57,42 @@ const CreatePostForm: React.FC<CreatePostProps> = ({ onSubmit, onCancel }) => {
   });
 
   const [newHashtag, setNewHashtag] = useState('');
-  const [newMediaUrl, setNewMediaUrl] = useState('');
-  const [newPreviewMediaUrl, setNewPreviewMediaUrl] = useState('');
-  const [newBlurredMediaUrl, setNewBlurredMediaUrl] = useState('');
-  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
+
+  // React Query mutations
+  const uploadFileMutation = useMutation({
+    mutationFn: async (fileToUpload: File) => {
+      return await fileAPI.uploadFile(fileToUpload, 'posts');
+    },
+  });
+
+  const createPostMutation = useMutation({
+    mutationFn: async (postData: any) => {
+      return await models.createPost(postData);
+    },
+    onSuccess: () => {
+      showToast.success('პოსტი წარმატებით შეიქმნა!');
+      // ფორმის reset
+      setFormData({
+        access_level: 'free',
+        blurred_media_urls: [],
+        content: '',
+        content_visibility: 'hidden',
+        hashtags: [],
+        is_premium: false,
+        media_urls: [],
+        preview_content: '',
+        preview_media_urls: [],
+        required_tier_id: 0,
+        type: 'text',
+        unlock_price: 0,
+      });
+      setUploadedImages([]);
+    },
+    onError: (error: any) => {
+      showToast.error(error.message || 'პოსტის შექმნა ვერ მოხერხდა');
+    },
+  });
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
@@ -80,81 +118,75 @@ const CreatePostForm: React.FC<CreatePostProps> = ({ onSubmit, onCancel }) => {
     }));
   };
 
-  const handleAddMediaUrl = () => {
-    if (newMediaUrl.trim() && !formData.media_urls.includes(newMediaUrl.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        media_urls: [...prev.media_urls, newMediaUrl.trim()]
-      }));
-      setNewMediaUrl('');
-    }
-  };
 
-  const handleRemoveMediaUrl = (url: string) => {
-    setFormData(prev => ({
-      ...prev,
-      media_urls: prev.media_urls.filter(u => u !== url)
-    }));
-  };
-
-  const handleAddPreviewMediaUrl = () => {
-    if (newPreviewMediaUrl.trim() && !formData.preview_media_urls.includes(newPreviewMediaUrl.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        preview_media_urls: [...prev.preview_media_urls, newPreviewMediaUrl.trim()]
-      }));
-      setNewPreviewMediaUrl('');
-    }
-  };
-
-  const handleRemovePreviewMediaUrl = (url: string) => {
-    setFormData(prev => ({
-      ...prev,
-      preview_media_urls: prev.preview_media_urls.filter(u => u !== url)
-    }));
-  };
-
-  const handleAddBlurredMediaUrl = () => {
-    if (newBlurredMediaUrl.trim() && !formData.blurred_media_urls.includes(newBlurredMediaUrl.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        blurred_media_urls: [...prev.blurred_media_urls, newBlurredMediaUrl.trim()]
-      }));
-      setNewBlurredMediaUrl('');
-    }
-  };
-
-  const handleRemoveBlurredMediaUrl = (url: string) => {
-    setFormData(prev => ({
-      ...prev,
-      blurred_media_urls: prev.blurred_media_urls.filter(u => u !== url)
-    }));
-  };
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
+    
     if (files.length > 0) {
-      setUploadedImages(prev => [...prev, ...files]);
-      
-      // Create previews
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setImagePreviews(prev => [...prev, e.target?.result as string]);
-        };
-        reader.readAsDataURL(file);
-      });
+      for (const file of files) {
+        try {
+          // 1. შევქმნათ preview
+          const reader = new FileReader();
+          const preview = await new Promise<string>((resolve) => {
+            reader.onload = (e) => resolve(e.target?.result as string);
+            reader.readAsDataURL(file);
+          });
+
+          // 2. ავტომატურად ატვირთოთ API-ზე useMutation-ით
+          const uploadResult = await uploadFileMutation.mutateAsync(file);
+          
+          // 3. დავამატოთ uploadedImages-ში
+          const newImage: UploadedImage = {
+            file: file,
+            preview: preview,
+            blurIntensity: 0,
+            uploadedUrl: (uploadResult as any).data?.blurred_url || (uploadResult as any).blurred_url || (uploadResult as any).url // API response-იდან URL-ის მიღება
+          };
+          
+          setUploadedImages(prev => [...prev, newImage]);
+          showToast.success(`სურათი "${file.name}" წარმატებით ატვირთა!`);
+        } catch (error) {
+          console.error('Error uploading image:', error);
+          showToast.error(`სურათის "${file.name}" ატვირთვა ვერ მოხერხდა`);
+        }
+      }
     }
   };
 
   const handleRemoveImage = (index: number) => {
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    try {
+      // 1. მივიღოთ უკვე ატვირთული URL-ები
+      const mediaUrls = uploadedImages
+        .filter(img => img.uploadedUrl) // მხოლოდ წარმატებით ატვირთული სურათები
+        .map(img => {
+          // Extract URL from response object
+          if (typeof img.uploadedUrl === 'string') {
+            return img.uploadedUrl;
+          }
+          // If it's an object, extract the URL
+          return (img.uploadedUrl as any).data?.blurred_url || (img.uploadedUrl as any).blurred_url || (img.uploadedUrl as any).url;
+        })
+        .filter(url => url); // Remove any undefined values
+      
+      // 2. გავგზავნოთ პოსტი
+      await createPostMutation.mutateAsync({
+        ...formData,
+        media_urls: mediaUrls,
+        // blur_intensity თითოეული სურათისთვის - გავიგზავნოთ array ან avg
+        // (თუ backend-ს სჭირდება ერთი მნიშვნელობა)
+        blur_intensity: uploadedImages.length > 0 
+          ? Math.round(uploadedImages.reduce((sum, img) => sum + img.blurIntensity, 0) / uploadedImages.length)
+          : 0,
+      });
+    } catch (error) {
+      console.error('Error submitting post:', error);
+    }
   };
 
   return (
@@ -555,6 +587,7 @@ const CreatePostForm: React.FC<CreatePostProps> = ({ onSubmit, onCancel }) => {
                           component="span"
                           variant="outlined"
                           startIcon={<CloudUpload />}
+                          disabled={uploadFileMutation.isPending}
                           sx={{
                             borderColor: '#ef4444',
                             color: '#ef4444',
@@ -574,15 +607,15 @@ const CreatePostForm: React.FC<CreatePostProps> = ({ onSubmit, onCancel }) => {
                             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                           }}
                         >
-                          Click to Upload Images
+                          {uploadFileMutation.isPending ? 'ატვირთვა...' : 'Click to Upload Images'}
                         </Button>
                       </label>
                     </Box>
 
                     {/* Image Previews */}
-                    {imagePreviews.length > 0 && (
+                    {uploadedImages.length > 0 && (
                       <Box className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {imagePreviews.map((preview, index) => (
+                        {uploadedImages.map((image, index) => (
                           <Box
                             key={index}
                             sx={{
@@ -602,14 +635,14 @@ const CreatePostForm: React.FC<CreatePostProps> = ({ onSubmit, onCancel }) => {
                             }}
                           >
                             <img
-                              src={preview}
+                              src={image.preview}
                               alt={`Preview ${index + 1}`}
                               style={{
                                 width: '100%',
                                 height: '300px',
                                 objectFit: 'cover',
                                 display: 'block',
-                                filter: `blur(${formData.blur_intensity}px)`,
+                                filter: `blur(${image.blurIntensity}px)`,
                                 transition: 'filter 0.3s ease',
                               }}
                             />
@@ -655,8 +688,15 @@ const CreatePostForm: React.FC<CreatePostProps> = ({ onSubmit, onCancel }) => {
                                 Blur Intensity
                               </Typography>
                               <Slider
-                                value={formData.blur_intensity}
-                                onChange={(_, value) => handleInputChange('blur_intensity', value)}
+                                value={image.blurIntensity}
+                                onChange={(_, value) => {
+                                  const newBlurIntensity = value as number;
+                                  
+                                  // Update local state only (no re-upload)
+                                  setUploadedImages(prev => prev.map((img, i) => 
+                                    i === index ? { ...img, blurIntensity: newBlurIntensity } : img
+                                  ));
+                                }}
                                 min={0}
                                 max={20}
                                 step={1}
@@ -688,7 +728,7 @@ const CreatePostForm: React.FC<CreatePostProps> = ({ onSubmit, onCancel }) => {
                                 variant="caption" 
                                 className="text-gray-300 text-center block mt-2 font-medium"
                               >
-                                Blur Level: {formData.blur_intensity}px
+                                Blur Level: {image.blurIntensity}px
                               </Typography>
                             </Box>
                              
@@ -817,6 +857,7 @@ const CreatePostForm: React.FC<CreatePostProps> = ({ onSubmit, onCancel }) => {
                       type="submit"
                       variant="contained"
                       size="large"
+                      disabled={createPostMutation.isPending}
                       sx={{
                         background: 'linear-gradient(135deg, #ef4444 0%, #ec4899 100%)',
                         '&:hover': {
@@ -824,7 +865,7 @@ const CreatePostForm: React.FC<CreatePostProps> = ({ onSubmit, onCancel }) => {
                         },
                       }}
                     >
-                      Create Post
+                      {createPostMutation.isPending ? 'იქმნება...' : 'Create Post'}
                     </Button>
                   </Box>
                 </Box>

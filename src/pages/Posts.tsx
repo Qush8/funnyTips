@@ -1,15 +1,59 @@
 import { Container, Typography, Box, CircularProgress, Tabs, Tab } from '@mui/material';
 import { useState } from 'react';
-import { usePosts } from '../hooks/usePosts';
+import { useQuery } from '@tanstack/react-query';
+import { models } from '../lib/api';
 import { PostCard } from '../components/feed/PostCard';
 
 export const Posts = () => {
   const [filter, setFilter] = useState(0);
-  const { data: posts, isLoading } = usePosts();
+  const page = 1;
+  const limit = 10;
+  
+  const { data: modelPosts, isLoading } = useQuery({
+    queryKey: ['modelPosts', page, limit],
+    queryFn: () => models.getModelPosts(page, limit),
+    enabled: true
+  });
 
   const handleFilterChange = (_: React.SyntheticEvent, newValue: number) => {
     setFilter(newValue);
   };
+
+  // Tab-ების მიხედვით კონტენტის ფილტრაცია
+  const getFilteredPosts = () => {
+    if (!modelPosts?.data?.posts || !Array.isArray(modelPosts.data.posts)) {
+      return [];
+    }
+
+    const posts = modelPosts.data.posts;
+
+    switch (filter) {
+      case 0: // All Posts
+        return posts;
+      case 1: // Free
+        return posts.filter((post: any) => 
+          post.access_level === 'free' || !post.is_premium
+        );
+      case 2: // Premium
+        return posts.filter((post: any) => 
+          post.is_premium === true || post.access_level === 'premium'
+        );
+      case 3: // Images
+        return posts.filter((post: any) => 
+          post.media_urls && post.media_urls.length > 0 && 
+          (post.type === 'image' || post.type === 'gallery')
+        );
+      case 4: // Videos
+        return posts.filter((post: any) => 
+          post.media_urls && post.media_urls.length > 0 && 
+          post.type === 'video'
+        );
+      default:
+        return posts;
+    }
+  };
+
+  const filteredPosts = getFilteredPosts();
 
   if (isLoading) {
     return (
@@ -47,31 +91,53 @@ export const Posts = () => {
           </Tabs>
         </Box>
 
-        <Box className="grid grid-cols-1 md:grid-cols-12 gap-4">
-          <Box className="md:col-span-8">
-            {posts?.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
+        <Box className={`${filter === 1 || filter === 2 ? 'flex flex-wrap gap-[20px] justify-center' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[20px]'} pt-[20px]`}>
+          {filteredPosts && filteredPosts.length > 0 ? (
+            filteredPosts.map((post: any, index: number) => {
+              // Tab-ის მიხედვით variant-ის განსაზღვრა
+              const getVariant = () => {
+                switch (filter) {
+                  case 0: return 'default'; // All Posts
+                  case 1: return 'compact'; // Free
+                  case 2: return 'tall'; // Premium
+                  case 3: return 'wide'; // Images
+                  case 4: return 'default'; // Videos
+                  default: return 'default';
+                }
+              };
 
-            {!posts || posts.length === 0 ? (
-              <Box className="text-center py-12 bg-gray-900 rounded-lg shadow border border-gray-800">
-                <Typography variant="h6" className="text-gray-400">
-                  No posts found
-                </Typography>
-              </Box>
-            ) : null}
-          </Box>
+              // Tab-ის მიხედვით tabType-ის განსაზღვრა
+              const getTabType = () => {
+                switch (filter) {
+                  case 0: return 'all';
+                  case 1: return 'free';
+                  case 2: return 'premium';
+                  case 3: return 'images';
+                  case 4: return 'videos';
+                  default: return 'all';
+                }
+              };
 
-          <Box className="md:col-span-4">
-            <Box className="bg-gray-900 rounded-lg shadow p-4 sticky top-20 border border-gray-800">
-              <Typography variant="h6" className="font-semibold mb-3 text-white">
-                🔥 Trending Now
-              </Typography>
-              <Typography variant="body2" className="text-gray-400">
-                Trending posts and creators
+              return (
+                <PostCard 
+                  key={post.id || index} 
+                  post={post} 
+                  variant={getVariant()}
+                  tabType={getTabType()}
+                />
+              );
+            })
+          ) : (
+            <Box className="col-span-full text-center py-12 bg-gray-900 rounded-lg shadow border border-gray-800">
+              <Typography variant="h6" className="text-gray-400">
+                {filter === 0 ? 'No posts found' : 
+                 filter === 1 ? 'No free posts found' :
+                 filter === 2 ? 'No premium posts found' :
+                 filter === 3 ? 'No image posts found' :
+                 filter === 4 ? 'No video posts found' : 'No posts found'}
               </Typography>
             </Box>
-          </Box>
+          )}
         </Box>
       </Container>
     </Box>

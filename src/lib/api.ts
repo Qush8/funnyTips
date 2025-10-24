@@ -62,6 +62,7 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       authService.removeToken();
+      showToast.error('Session expired. Please login again.');
       window.location.href = '/login';
     }
     
@@ -232,13 +233,16 @@ export const user = {
 
 // ფაილების API
 export const file = {
-  uploadFile: async (file: File, folder?: string) => {
+  uploadFile: async (file: File, folder?: string, blurIntensity?: number) => {
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('image', file);
+      if (blurIntensity !== undefined) {
+        formData.append('blur_intensity', blurIntensity.toString());
+      }
       if (folder) formData.append('folder', folder);
       
-      const response = await apiClient.post('/files/upload', formData, {
+      const response = await apiClient.post('/models/posts/image-with-blur', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return response;
@@ -305,9 +309,11 @@ export const models = {
     }
   },
 
-  getModelPosts: async () => {
+  getModelPosts: async (page: number = 1, limit: number = 10) => {
     try {
-      const response = await apiClient.get('/models/posts');
+      const response = await apiClient.get('/models/posts', {
+        params: { page, limit }
+      });
       return response;
     } catch (error) {
       console.error('Error getting model posts:', error);

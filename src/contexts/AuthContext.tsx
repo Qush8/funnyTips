@@ -4,6 +4,7 @@ import type { User } from '../types';
 import { UserRole } from '../types';
 import { authService } from '../lib/auth';
 import { showToast } from '../utils/toast';
+import { authorization } from '../lib/api';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -49,38 +50,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     initAuth();
   }, []);
 
-  const signIn = async (email: string, _password: string) => {
+  const signIn = async (email: string, password: string) => {
     try {
-      // Mock authentication - backend-ის გარეშე
-      // TODO: Replace with real API call when backend is ready
+      // Real API call
+      const response = await authorization.loginUser(email, password);
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Mock user data
-      const mockUser: User = {
-        id: '1',
-        email,
-        username: email.split('@')[0],
-        displayName: email.split('@')[0],
-        role: UserRole.FAN,
-        verified: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      // Mock token
-      const mockToken = 'mock-jwt-token-' + Date.now();
+      // Extract token and user data from response
+      const token = (response as any).token || (response as any).data?.token || (response as any).access_token;
+      const user = (response as any).user || (response as any).data?.user || response;
       
-      authService.setToken(mockToken);
-      authService.setUser(mockUser);
-      setCurrentUser(mockUser);
-      setUserData(mockUser);
+      // Store token and user data
+      authService.setToken(token);
+      authService.setUser(user);
+      setCurrentUser(user);
+      setUserData(user);
       
       showToast.success('Login successful!');
     } catch (error) {
       console.error('Sign in failed:', error);
-      showToast.error('Login failed. Please try again.');
+      showToast.error('Login failed. Please check your credentials.');
       throw error;
     }
   };

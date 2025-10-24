@@ -27,7 +27,12 @@ export interface Post {
   type: PostType;
   content?: string;
   media: Media[];
+  media_urls?: string[]; // API-დან მომავალი ველი
+  blur_intensity?: number; // API-დან მომავალი ველი
+  access_level?: string; // API-დან მომავალი ველი
   isPPV: boolean;
+  is_premium?: boolean; // API-დან მომავალი ველი
+  unlock_price?: number; // API-დან მომავალი ველი
   price?: number;
   subscribersOnly: boolean;
   likes: number;

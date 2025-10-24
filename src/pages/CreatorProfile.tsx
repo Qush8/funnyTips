@@ -118,7 +118,7 @@ export const CreatorProfile = () => {
                 ) : (
                   <Box className="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <Box className="md:col-span-8">
-                      {posts?.map((post) => (
+                      {posts?.map((post : any) => (
                         <PostCard key={post.id} post={post} />
                       ))}
                       {!posts || posts.length === 0 ? (

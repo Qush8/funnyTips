@@ -1,20 +1,32 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Post } from '../types';
 import { MOCK_POSTS } from '../data/mockData';
+import { models } from '../lib/api';
 
-export const usePosts = (_creatorId?: string) => {
+export const usePosts = (_creatorId?: string, page: number = 1, limit: number = 10) => {
   return useQuery({
-    queryKey: ['posts', _creatorId],
+    queryKey: ['posts', _creatorId, page, limit],
     queryFn: async () => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Filter by creator if needed
-      if (_creatorId) {
-        return MOCK_POSTS.filter(p => p.creatorId === _creatorId);
+      try {
+        // Real API call to get model posts with pagination
+        const response = await models.getModelPosts(page, limit);
+        
+        // Transform API response to match Post type
+        const posts = (response as any).data || response || [];
+        
+        // Filter by creator if needed
+        if (_creatorId) {
+          return posts.filter((p: any) => p.creator_id === _creatorId || p.model_id === _creatorId);
+        }
+        
+        return posts;
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        // Fallback to mock data if API fails
+        if (_creatorId) {
+          return MOCK_POSTS.filter(p => p.creatorId === _creatorId);
+        }
+        return MOCK_POSTS;
       }
-      
-      return MOCK_POSTS;
     },
   });
 };
@@ -34,23 +46,9 @@ export const useCreatePost = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (_data: FormData) => {
-      // Mock create post
-      const mockPost: Post = {
-        id: Date.now().toString(),
-        creatorId: '1',
-        type: 'TEXT' as any,
-        content: 'New mock post',
-        media: [],
-        isPPV: false,
-        subscribersOnly: false,
-        likes: 0,
-        comments: 0,
-        views: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      return mockPost;
+    mutationFn: async (postData: any) => {
+      // Real API call to create post
+      return await models.createPost(postData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
