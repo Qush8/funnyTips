@@ -20,7 +20,7 @@ export const Posts = () => {
   }
 
   return (
-    <Box className="min-h-screen bg-black">
+    <Box className="min-h-screen bg-black pt-[100px]">
       <Container maxWidth="lg" className="py-8">
         <Box className="mb-6">
           <Typography variant="h3" className="font-bold text-white mb-2">

@@ -36,7 +36,7 @@ export const Shorts = () => {
   const currentShort = MOCK_SHORTS[currentIndex];
 
   return (
-    <Box className="min-h-screen bg-black flex items-center justify-center">
+    <Box className="min-h-screen bg-black flex items-center justify-center pt-[100px]">
       {/* TikTok-style vertical video viewer */}
       <Box className="relative w-full max-w-md h-[calc(100vh-80px)] bg-gray-900 rounded-2xl overflow-hidden">
         {/* Video Background */}

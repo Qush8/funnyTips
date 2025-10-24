@@ -4,7 +4,7 @@ import { CreatorCard } from '../components/creator/CreatorCard';
 
 export const Models = () => {
   return (
-    <Box className="min-h-screen bg-black">
+    <Box className="min-h-screen bg-black pt-[100px]">
       <Container maxWidth="xl" className="py-8">
         <Box className="mb-8">
           <Typography variant="h3" className="font-bold text-white mb-2">

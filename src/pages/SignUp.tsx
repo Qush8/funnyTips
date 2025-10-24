@@ -62,7 +62,7 @@ export const SignUp = () => {
   };
 
   return (
-    <Box className="min-h-screen flex items-center justify-center bg-black">
+    <Box className="min-h-screen flex items-center justify-center bg-black pt-[100px]">
       <Container maxWidth="sm" className="py-12">
         <Paper
           elevation={24}

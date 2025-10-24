@@ -38,7 +38,7 @@ export const Images = () => {
   };
 
   return (
-    <Box className="min-h-screen bg-black mt-[100px]">
+    <Box className="min-h-screen bg-black pt-[100px]">
       <Container maxWidth="xl" className="py-8">
         <Box className="mb-8">
           <Typography variant="h3" className="font-bold text-white mb-2">

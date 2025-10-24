@@ -21,6 +21,7 @@ import { Shorts } from '../pages/Shorts';
 import { Images } from '../pages/Images';
 import { Models } from '../pages/Models';
 import { Posts } from '../pages/Posts';
+import CreatePostPage from '../pages/CreatePostPage';
 
 const AppRoutes = () => {
   const { currentUser, loading } = useAuth();
@@ -54,6 +55,7 @@ const AppRoutes = () => {
             <Route path="/images" element={<Images />} />
             <Route path="/models" element={<Models />} />
             <Route path="/posts" element={<Posts />} />
+            <Route path="/create-post" element={<CreatePostPage />} />
           </Route>
 
           {/* Fallback */}

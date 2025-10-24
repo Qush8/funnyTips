@@ -30,7 +30,7 @@ const MOCK_LIVE_STREAMS = [
 
 export const Live = () => {
   return (
-    <Box className="min-h-screen bg-black">
+    <Box className="min-h-screen bg-black pt-[100px]">
       <Container maxWidth="xl" className="py-8">
         <Box className="mb-8">
           <Typography variant="h3" className="font-bold text-white mb-2">

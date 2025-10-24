@@ -1,5 +1,5 @@
 import { AppBar, Toolbar, IconButton, Button, Avatar, Menu, MenuItem, Box, Typography } from '@mui/material';
-import { Notifications, Message, VideoCall, Collections, Person, Article, FlashOn } from '@mui/icons-material';
+import { Notifications, Message, VideoCall, Collections, Person, Article, FlashOn, Add } from '@mui/icons-material';
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -111,6 +111,28 @@ export const Navbar = () => {
         <Box className="flex items-center gap-2">
           {currentUser ? (
             <>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={() => navigate('/create-post')}
+                sx={{
+                  background: 'linear-gradient(135deg, #ef4444 0%, #ec4899 100%)',
+                  color: 'white',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1,
+                  borderRadius: '12px',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #dc2626 0%, #db2777 100%)',
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 8px 20px rgba(239, 68, 68, 0.3)',
+                  },
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
+              >
+                Create Post
+              </Button>
               <IconButton
                 sx={{
                   color: 'rgba(255,255,255,0.7)',

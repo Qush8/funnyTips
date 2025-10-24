@@ -2,7 +2,7 @@ import { Container, Box, Typography } from '@mui/material';
 
 export const Messages = () => {
   return (
-    <Box className="min-h-screen bg-black">
+    <Box className="min-h-screen bg-black pt-[100px]">
       <Container maxWidth="lg" className="py-8">
         <Typography variant="h4" className="font-bold mb-6 text-white">
           💬 Messages

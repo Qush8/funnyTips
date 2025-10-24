@@ -33,7 +33,7 @@ export const CreatorProfile = () => {
   const isOwnProfile = userData?.id === creator.id;
 
   return (
-    <Box className="min-h-screen bg-black">
+    <Box className="min-h-screen bg-black pt-[100px]">
       <Box className="relative h-64 bg-gradient-to-r from-red-900 to-pink-900">
         {creator.coverImage && (
           <img src={creator.coverImage} alt="Cover" className="w-full h-full object-cover" />

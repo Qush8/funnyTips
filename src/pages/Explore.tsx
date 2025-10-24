@@ -4,7 +4,7 @@ import { CreatorCard } from '../components/creator/CreatorCard';
 
 export const Explore = () => {
   return (
-    <Box className="min-h-screen bg-black">
+    <Box className="min-h-screen bg-black pt-[100px]">
       <Container maxWidth="lg" className="py-8">
         <Typography variant="h4" className="font-bold mb-2 text-white">
           🔥 Explore Creators
