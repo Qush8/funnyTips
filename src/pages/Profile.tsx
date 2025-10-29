@@ -19,12 +19,12 @@ import {
   Edit, 
   CameraAlt, 
   MoreVert,
-  Share,
-  Message
+  Share
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { usePosts } from '../hooks/usePosts';
 import { PostCard } from '../components/feed/PostCard';
+import CreatePostModal from '../components/common/CreatePostModal';
 import { useQuery } from '@tanstack/react-query';
 import { models } from '../lib/api';
 
@@ -33,6 +33,7 @@ export const Profile = () => {
   const { data: posts, isLoading: postsLoading } = usePosts(userData?.id);
   const [activeTab, setActiveTab] = useState(0);
   const [filter, setFilter] = useState(0);
+  const [showCreatePostModal, setShowCreatePostModal] = useState(false);
 
   // Use posts-with-data endpoint from api.ts
   const { data: postsWithData } = useQuery({
@@ -268,6 +269,7 @@ export const Profile = () => {
                   <Button 
                     variant="contained" 
                     startIcon={<Add />}
+                    onClick={() => setShowCreatePostModal(true)}
                     sx={{
                       background: 'linear-gradient(135deg, #ef4444 0%, #ec4899 100%)',
                       '&:hover': {
@@ -508,6 +510,12 @@ export const Profile = () => {
       
         </Box>
       </Container>
+
+      {/* Create Post Modal */}
+      <CreatePostModal
+        open={showCreatePostModal}
+        onClose={() => setShowCreatePostModal(false)}
+      />
     </Box>
   );
 };
