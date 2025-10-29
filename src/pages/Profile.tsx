@@ -17,7 +17,6 @@ import {
 import { 
   Add, 
   Edit, 
-  CameraAlt, 
   MoreVert,
   Share
 } from '@mui/icons-material';
@@ -110,7 +109,7 @@ export const Profile = () => {
   return (
     <Box className="min-h-screen bg-black pt-[100px]">
       {/* Cover Photo Section */}
-      <Box className="relative">
+      <Box className="relative ">
         <Box className="h-80 bg-gradient-to-r from-red-900 to-pink-900">
           {displayUser?.coverImage || displayUser?.bannerImage ? (
             <img 
@@ -119,26 +118,26 @@ export const Profile = () => {
               className="w-full h-full object-cover" 
             />
           ) : (
-            <Box className="w-full h-full bg-gradient-to-r from-red-900 to-pink-900 flex items-center justify-center">
-              <Typography variant="h4" className="text-white/50">
-                Cover Photo
-              </Typography>
-            </Box>
+            <img 
+              src="https://images.unsplash.com/photo-1519904981063-b0cf448d479e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" 
+              alt="Cover Photo" 
+              className="w-full h-full object-cover" 
+            />
           )}
         </Box>
         
         {/* Cover Photo Edit Button */}
-        <IconButton
+        {/* <IconButton
           className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white"
           size="small"
         >
           <CameraAlt />
-        </IconButton>
+        </IconButton> */}
       </Box>
 
-      <Container maxWidth="lg">
+      <Container className='absolute  top-[680px]' maxWidth="lg">
         {/* Profile Info Section */}
-        <Box className="relative -mt-20 pb-6">
+        <Box className="relative pb-6">
           <Card 
             className="bg-gray-900 shadow-2xl"
             sx={{
@@ -258,14 +257,7 @@ export const Profile = () => {
                 </Box>
 
                 {/* Action Buttons */}
-                <Box className="flex gap-2">
-                  <Button 
-                    variant="outlined" 
-                    startIcon={<Edit />}
-                    className="border-red-500 text-red-500 hover:bg-red-500/10"
-                  >
-                    Edit Profile
-                  </Button>
+                <Box className="flex gap-[10px]">
                   <Button 
                     variant="contained" 
                     startIcon={<Add />}
@@ -279,13 +271,18 @@ export const Profile = () => {
                   >
                     Create Post
                   </Button>
-                  <IconButton className="border border-gray-600 text-gray-400 hover:bg-gray-800">
-                    <Share />
-                  </IconButton>
-                  <IconButton className="border border-gray-600 text-gray-400 hover:bg-gray-800">
-                    <MoreVert />
-                  </IconButton>
+                  
+                  <Button 
+                    variant="outlined" 
+                    startIcon={<Edit />}
+                    className="border-red-500 text-red-500 hover:bg-red-500/10"
+                  >
+                    Edit Profile
+                  </Button>
+                 
+                  
                 </Box>
+                
               </Box>
             </CardContent>
           </Card>
@@ -293,7 +290,7 @@ export const Profile = () => {
 
         {/* Navigation Tabs */}
         <Paper 
-          className="bg-gray-900 shadow-lg"
+          className="bg-gray-900 shadow-lg mt-[20px]"
           sx={{
             background: 'linear-gradient(135deg, rgba(26,26,26,0.95) 0%, rgba(45,45,45,0.9) 100%)',
             backdropFilter: 'blur(20px)',
@@ -325,7 +322,7 @@ export const Profile = () => {
         </Paper>
 
         {/* Content Area */}
-        <Box className="mt-6">
+        <Box className="mt-[20px]">
           {activeTab === 0 && (
             <Box className="flex flex-col lg:flex-row gap-6">
               {/* Posts Column */}

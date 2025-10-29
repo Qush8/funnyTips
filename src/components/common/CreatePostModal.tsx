@@ -234,9 +234,18 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose }) => {
       fullWidth
       PaperProps={{
         sx: {
-          backgroundColor: '#111827',
+          background: 'linear-gradient(rgb(17 45 83), rgb(34 48 70))',
           color: 'white',
           maxHeight: '90vh',
+          borderRadius: '12px',
+          border: '1px solid #374151',
+        },
+      }}
+      BackdropProps={{
+        sx: {
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)', // Safari-ისთვის
         },
       }}
     >
@@ -250,7 +259,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose }) => {
       </DialogTitle>
 
       <DialogContent 
-        className="space-y-6"
+        className="space-y-6 flex flex-col gap-[20px]"
         sx={{
           paddingTop: '12px !important',
         }}
@@ -452,7 +461,14 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose }) => {
         )}
 
         {/* Tags */}
-        <Card className="bg-gray-800 border border-gray-700">
+        <Box className='flex flex-col gap-[8px]'>
+          {/* Tags form */}
+             <Card sx={{
+          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: '15px',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)',
+        }}>
           <CardContent>
             <Typography variant="h6" className="text-white mb-4">
               Tags
@@ -498,56 +514,68 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose }) => {
               ))}
             </Box>
           </CardContent>
-        </Card>
+            </Card>
 
-        {/* Hashtags */}
-        <Card className="bg-gray-800 border border-gray-700">
-          <CardContent>
-            <Typography variant="h6" className="text-white mb-4">
-              Hashtags
-            </Typography>
-            
-            <Box className="flex gap-2 mb-4">
-              <TextField
-                value={newHashtag}
-                onChange={(e) => setNewHashtag(e.target.value)}
-                placeholder="Add hashtag"
-                className="flex-1"
-                onKeyPress={(e) => e.key === 'Enter' && addHashtag()}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    color: 'white',
-                    '& fieldset': { borderColor: '#374151' },
-                    '&:hover fieldset': { borderColor: '#6B7280' },
-                    '&.Mui-focused fieldset': { borderColor: '#EF4444' },
-                  },
-                  '& .MuiInputLabel-root': { color: '#9CA3AF' },
-                  '& .MuiInputLabel-root.Mui-focused': { color: '#EF4444' },
-                }}
-              />
-              <Button
-                onClick={addHashtag}
-                variant="outlined"
-                startIcon={<Add />}
-                className="border-gray-600 text-gray-300 hover:bg-gray-700"
-              >
-                Add
-              </Button>
-            </Box>
-            
-            <Box className="flex flex-wrap gap-2">
-              {formData.hashtags.map((hashtag, index) => (
-                <Chip
-                  key={index}
-                  label={`#${hashtag}`}
-                  onDelete={() => removeHashtag(hashtag)}
-                  className="bg-gray-600 text-white"
-                  deleteIcon={<Close />}
+          {/* Tags list */}
+
+           {/* Hashtags */}
+          <Card sx={{
+            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '15px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)',
+          }}>
+            <CardContent>
+              <Typography variant="h6" className="text-white mb-4">
+                Hashtags
+              </Typography>
+              
+              <Box className="flex gap-2 mb-4">
+                <TextField
+                  value={newHashtag}
+                  onChange={(e) => setNewHashtag(e.target.value)}
+                  placeholder="Add hashtag"
+                  className="flex-1"
+                  onKeyPress={(e) => e.key === 'Enter' && addHashtag()}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      color: 'white',
+                      '& fieldset': { borderColor: '#374151' },
+                      '&:hover fieldset': { borderColor: '#6B7280' },
+                      '&.Mui-focused fieldset': { borderColor: '#EF4444' },
+                    },
+                    '& .MuiInputLabel-root': { color: '#9CA3AF' },
+                    '& .MuiInputLabel-root.Mui-focused': { color: '#EF4444' },
+                  }}
                 />
-              ))}
-            </Box>
-          </CardContent>
-        </Card>
+                <Button
+                  onClick={addHashtag}
+                  variant="outlined"
+                  startIcon={<Add />}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
+                  Add
+                </Button>
+              </Box>
+              
+              <Box className="flex flex-wrap gap-2">
+                {formData.hashtags.map((hashtag, index) => (
+                  <Chip
+                    key={index}
+                    label={`#${hashtag}`}
+                    onDelete={() => removeHashtag(hashtag)}
+                    className="bg-gray-600 text-white"
+                    deleteIcon={<Close />}
+                  />
+                ))}
+              </Box>
+            </CardContent>
+          </Card>
+          {/* Hashtags list */}
+        </Box>
+       
+
+       
       </DialogContent>
 
       <DialogActions className="p-6">
