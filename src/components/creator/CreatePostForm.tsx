@@ -25,7 +25,7 @@ import {
   CloudUpload,
   Delete,
 } from '@mui/icons-material';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { file as fileAPI, models } from '../../lib/api';
 import { showToast } from '../../utils/toast';
 
@@ -59,6 +59,9 @@ const CreatePostForm: React.FC<CreatePostProps> = ({ onCancel }) => {
   const [newHashtag, setNewHashtag] = useState('');
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
 
+  // React Query
+  const queryClient = useQueryClient();
+
   // React Query mutations
   const uploadFileMutation = useMutation({
     mutationFn: async (fileToUpload: File) => {
@@ -72,6 +75,11 @@ const CreatePostForm: React.FC<CreatePostProps> = ({ onCancel }) => {
     },
     onSuccess: () => {
       showToast.success('პოსტი წარმატებით შეიქმნა!');
+      
+      // Posts გვერდის refetch
+      queryClient.invalidateQueries({ queryKey: ['modelPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      
       // ფორმის reset
       setFormData({
         access_level: 'free',

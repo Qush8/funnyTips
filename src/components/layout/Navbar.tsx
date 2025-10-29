@@ -1,5 +1,5 @@
 import { AppBar, Toolbar, IconButton, Button, Avatar, Menu, MenuItem, Box, Typography } from '@mui/material';
-import { Notifications, Message, VideoCall, Collections, Person, Article, FlashOn, Add } from '@mui/icons-material';
+import { Notifications, Message, VideoCall, Collections, Person, Article, FlashOn, Add, AccountCircle } from '@mui/icons-material';
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { label: 'Images', path: '/images', icon: Collections },
   { label: 'Models', path: '/models', icon: Person },
   { label: 'Posts', path: '/posts', icon: Article },
+  { label: 'Profile', path: '/profile', icon: AccountCircle },
 ];
 
 export const Navbar = () => {

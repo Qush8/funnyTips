@@ -15,6 +15,7 @@ import { SignUp } from '../pages/SignUp';
 import { Home } from '../pages/Home';
 import { Explore } from '../pages/Explore';
 import { CreatorProfile } from '../pages/CreatorProfile';
+import { Profile } from '../pages/Profile';
 import { Messages } from '../pages/Messages';
 import { Live } from '../pages/Live';
 import { Shorts } from '../pages/Shorts';
@@ -45,6 +46,7 @@ const AppRoutes = () => {
           <Route element={<Layout />}>
             <Route path="/" element={<Navigate to={getDashboardByRole(currentUser)} replace />} />
             <Route path="/home" element={<Home />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/@:username" element={<CreatorProfile />} />
             <Route path="/messages" element={<Messages />} />
@@ -56,6 +58,7 @@ const AppRoutes = () => {
             <Route path="/models" element={<Models />} />
             <Route path="/posts" element={<Posts />} />
             <Route path="/create-post" element={<CreatePostPage />} />
+            <Route path="/@:username" element={<CreatorProfile />} />
           </Route>
 
           {/* Fallback */}

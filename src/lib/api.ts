@@ -331,6 +331,16 @@ export const models = {
     }
   },
 
+  getModelPostsWithData: async () => {
+    try {
+      const response = await apiClient.get('/models/posts-with-data');
+      return response;
+    } catch (error) {
+      console.error('Error getting model posts with data:', error);
+      throw error;
+    }
+  },
+
   uploadProfileImage: async (file: File) => {
     try {
       const formData = new FormData();
