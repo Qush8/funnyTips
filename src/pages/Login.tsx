@@ -41,11 +41,50 @@ export const Login = () => {
   };
 
   return (
-    <Box className="min-h-screen flex items-center justify-center bg-black pt-[100px]">
-      <Container maxWidth="sm" className="py-12">
+    <Box className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black pt-[100px]">
+      {/* Decorative animated background elements */}
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          overflow: 'hidden',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '25%',
+            left: '25%',
+            width: '400px',
+            height: '400px',
+            background: 'rgba(239, 68, 68, 0.1)',
+            borderRadius: '50%',
+            filter: 'blur(100px)',
+            animation: 'pulse 3s ease-in-out infinite',
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: '25%',
+            right: '25%',
+            width: '400px',
+            height: '400px',
+            background: 'rgba(236, 72, 153, 0.1)',
+            borderRadius: '50%',
+            filter: 'blur(100px)',
+            animation: 'pulse 3s ease-in-out infinite',
+            animationDelay: '0.7s',
+          }}
+        />
+      </Box>
+
+      <Container maxWidth="sm" className="py-12 relative z-10">
         <Paper
           elevation={24}
-          className="p-8 bg-gradient-to-br from-gray-900 to-black border border-gray-800"
+          className="p-8 ring-2 ring-blue-500  bg-gradient-to-br from-gray-900 to-black border border-gray-800 px-[20px] py-[40px]"
           sx={{ borderRadius: '24px' }}
         >
           <Box className="text-center mb-8">
@@ -66,7 +105,7 @@ export const Login = () => {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 flex flex-col gap-[16px] mt-[10px]">
             <TextField
               fullWidth
               label="Email"
@@ -129,12 +168,29 @@ export const Login = () => {
             </Button>
           </form>
 
-          <Box className="text-center mt-6">
-            <Typography variant="body2" className="text-gray-400">
+          <Box className="text-center mt-6 pt-[3px]">
+            <Typography 
+              variant="body2" 
+              className="text-gray-400"
+              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}
+            >
               Don't have an account?{' '}
               <Link
                 to="/signup"
-                className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-500 font-semibold hover:underline"
+                style={{
+                  background: 'linear-gradient(135deg, #ef4444 0%, #ec4899 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.textDecoration = 'underline';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.textDecoration = 'none';
+                }}
               >
                 Sign Up
               </Link>

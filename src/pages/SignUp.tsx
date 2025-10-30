@@ -13,22 +13,23 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { Visibility, VisibilityOff, PersonAdd } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
+import { authorization } from '../lib/api';
 
 export const SignUp = () => {
   const navigate = useNavigate();
-  const { signUp } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
     username: '',
-    displayName: '',
+    first_name: '',
+    last_name: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -51,10 +52,16 @@ export const SignUp = () => {
     setLoading(true);
 
     try {
-      await signUp(formData.email, formData.password, formData.username, formData.displayName);
-      navigate('/');
-    } catch (err) {
-      setError('Failed to create account. Username or email may already exist.');
+      await authorization.registerUser({
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.first_name,
+        lastName: formData.last_name,
+        username: formData.username,
+      });
+      navigate('/login');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to create account. Username or email may already exist.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -66,7 +73,7 @@ export const SignUp = () => {
       <Container maxWidth="sm" className="py-12">
         <Paper
           elevation={24}
-          className="p-8 bg-gradient-to-br from-gray-900 to-black border border-gray-800"
+       className="p-8 ring-2 ring-blue-500  bg-gradient-to-br from-gray-900 to-black border border-gray-800 px-[20px] py-[40px]"
           sx={{ borderRadius: '24px' }}
         >
           <Box className="text-center mb-8">
@@ -87,7 +94,7 @@ export const SignUp = () => {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 flex flex-col gap-[16px] mt-[10px]">
             <TextField
               fullWidth
               label="Username"
@@ -95,7 +102,7 @@ export const SignUp = () => {
               value={formData.username}
               onChange={handleChange}
               required
-              helperText="This will be your unique @username"
+            
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '12px',
@@ -105,9 +112,23 @@ export const SignUp = () => {
 
             <TextField
               fullWidth
-              label="Display Name"
-              name="displayName"
-              value={formData.displayName}
+              label="First Name"
+              name="first_name"
+              value={formData.first_name}
+              onChange={handleChange}
+              required
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '12px',
+                },
+              }}
+            />
+
+            <TextField
+              fullWidth
+              label="Last Name"
+              name="last_name"
+              value={formData.last_name}
               onChange={handleChange}
               required
               sx={{
@@ -206,10 +227,22 @@ export const SignUp = () => {
             </Button>
           </form>
 
-          <Box className="text-center mt-6">
-            <Typography variant="body2" className="text-gray-400">
+          <Box className="text-center mt-6 pt-[3px]">
+            <Typography 
+            variant="body2" 
+            className="text-gray-400"
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}
+            >
               Already have an account?{' '}
               <Link
+              style={{
+                background: 'linear-gradient(135deg, #ef4444 0%, #ec4899 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
                 to="/login"
                 className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-500 font-semibold hover:underline"
               >
