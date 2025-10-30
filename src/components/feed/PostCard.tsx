@@ -5,9 +5,10 @@ interface PostCardProps {
   post: Post;
   variant?: 'default' | 'compact' | 'wide' | 'tall';
   tabType?: 'all' | 'free' | 'premium' | 'images' | 'videos';
+  onClick?: (post: Post) => void;
 }
 
-export const PostCard = ({ post, variant = 'default', tabType = 'all' }: PostCardProps) => {
+export const PostCard = ({ post, variant = 'default', tabType = 'all', onClick }: PostCardProps) => {
   // Fallback images მხოლოდ error-ის შემთხვევაში
   const randomGirlImages = [
     'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
@@ -93,10 +94,17 @@ export const PostCard = ({ post, variant = 'default', tabType = 'all' }: PostCar
     };
   };
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick(post);
+    }
+  };
+
   return (
     <Card 
       className="relative group cursor-pointer bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 overflow-hidden"
       sx={getCardStyles()}
+      onClick={handleClick}
     >
       {/* Top Left Badge */}
       <Box className="absolute top-[13px] left-[10px] z-10 flex flex-col gap-[10px]">

@@ -3,9 +3,13 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { models } from '../lib/api';
 import { PostCard } from '../components/feed/PostCard';
+import { PostDetailModal } from '../components/common/PostDetailModal';
+import type { Post } from '../types';
 
 export const Posts = () => {
   const [filter, setFilter] = useState(0);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const page = 1;
   const limit = 10;
   
@@ -19,13 +23,32 @@ export const Posts = () => {
     setFilter(newValue);
   };
 
+  const handlePostClick = (post: Post) => {
+    setSelectedPost(post);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedPost(null);
+  };
+
   // Tab-ების მიხედვით კონტენტის ფილტრაცია
   const getFilteredPosts = () => {
     if (!modelPosts?.data?.posts || !Array.isArray(modelPosts.data.posts)) {
       return [];
     }
 
-    const posts = modelPosts.data.posts;
+    const posts = modelPosts.data.posts.map((post: any) => ({
+      ...post,
+      // Creator ინფორმაციის დამატება თუ არ არის
+      creator: post.creator || {
+        id: post.creator_id || post.creatorId || 'unknown',
+        username: post.creator_username || 'unknown',
+        displayName: post.creator_name || post.creator_display_name || 'Unknown Creator',
+        avatar: post.creator_avatar || 'https://i.pravatar.cc/150?img=1'
+      }
+    }));
 
     switch (filter) {
       case 0: // All Posts
@@ -124,6 +147,7 @@ export const Posts = () => {
                   post={post} 
                   variant={getVariant()}
                   tabType={getTabType()}
+                  onClick={handlePostClick}
                 />
               );
             })
@@ -140,6 +164,13 @@ export const Posts = () => {
           )}
         </Box>
       </Container>
+
+      {/* Post Detail Modal */}
+      <PostDetailModal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        post={selectedPost}
+      />
     </Box>
   );
 };
