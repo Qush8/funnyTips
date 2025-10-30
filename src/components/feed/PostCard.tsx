@@ -224,6 +224,7 @@ export const PostCard = ({ post, variant = 'default', tabType = 'all', onClick }
           </Box>
         </Box>
       </Box>
+      
     </Card>
   );
 };

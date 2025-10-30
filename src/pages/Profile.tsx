@@ -8,7 +8,6 @@ import {
   Tabs, 
   Tab, 
   CircularProgress,
-  IconButton,
   Card,
   CardContent,
   Paper,
@@ -16,16 +15,17 @@ import {
 } from '@mui/material';
 import { 
   Add, 
-  Edit, 
-  MoreVert,
-  Share
+  Edit
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { usePosts } from '../hooks/usePosts';
 import { PostCard } from '../components/feed/PostCard';
 import CreatePostModal from '../components/common/CreatePostModal';
-import { useQuery } from '@tanstack/react-query';
+import { PostDetailModal } from '../components/common/PostDetailModal';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { models } from '../lib/api';
+import type { Post } from '../types';
+import { queryClient } from '../lib/queryClient';
 
 export const Profile = () => {
   const { userData } = useAuth();
@@ -33,6 +33,10 @@ export const Profile = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [filter, setFilter] = useState(0);
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<any | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Use posts-with-data endpoint from api.ts
   const { data: postsWithData } = useQuery({
@@ -54,7 +58,14 @@ export const Profile = () => {
   const displayUser = userProfile || userData;
   const displayPosts = userPosts.length > 0 ? userPosts : (Array.isArray(posts) ? posts : []);
 
- 
+ const deleteMyPosts = useMutation({
+    mutationFn: (postId: number) => models.deleteModelPost(postId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['posts-with-data'] });
+    },
+    
+ })
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -63,6 +74,33 @@ export const Profile = () => {
   const handleFilterChange = (_: React.SyntheticEvent, newValue: number) => {
     setFilter(newValue);
   };
+
+  const handlePostClick = (post: Post) => {
+    setSelectedPost(post);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedPost(null);
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    await deleteMyPosts.mutateAsync(Number(postId));
+  };
+
+  const handleEditPost = (post: Post) => {
+    console.log('handleEditPost called with post:', post);
+    setEditingPost(post);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingPost(null);
+  };
+
+
 
   // Tab-ების მიხედვით კონტენტის ფილტრაცია (Posts-ის მსგავსად)
   const getFilteredPosts = () => {
@@ -350,39 +388,16 @@ export const Profile = () => {
                     <CircularProgress sx={{ color: '#ef4444' }} />
                   </Box>
                 ) : (
-                  <Box className={`${filter === 1 || filter === 2 ? 'flex flex-wrap gap-[20px] justify-center' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[20px]'} pt-[20px]`}>
+                  <Box className="flex flex-wrap gap-[20px] justify-center pt-[20px]">
                     {filteredPosts && filteredPosts.length > 0 ? (
                       filteredPosts.map((post: any, index: number) => {
-                        // Tab-ის მიხედვით variant-ის განსაზღვრა
-                        const getVariant = () => {
-                          switch (filter) {
-                            case 0: return 'default'; // All Posts
-                            case 1: return 'compact'; // Free
-                            case 2: return 'tall'; // Premium
-                            case 3: return 'wide'; // Images
-                            case 4: return 'default'; // Videos
-                            default: return 'default';
-                          }
-                        };
-
-                        // Tab-ის მიხედვით tabType-ის განსაზღვრა
-                        const getTabType = () => {
-                          switch (filter) {
-                            case 0: return 'all';
-                            case 1: return 'free';
-                            case 2: return 'premium';
-                            case 3: return 'images';
-                            case 4: return 'videos';
-                            default: return 'all';
-                          }
-                        };
-
                         return (
                           <PostCard 
                             key={post.id || index} 
                             post={post} 
-                            variant={getVariant()}
-                            tabType={getTabType()}
+                            variant="compact"
+                            tabType="free"
+                            onClick={handlePostClick}
                           />
                         );
                       })
@@ -512,6 +527,25 @@ export const Profile = () => {
       <CreatePostModal
         open={showCreatePostModal}
         onClose={() => setShowCreatePostModal(false)}
+      />
+
+      {/* Post Detail Modal */}
+      <PostDetailModal
+        open={isModalOpen}
+        onClose={handleCloseModal}
+        post={selectedPost}
+        onDelete={handleDeletePost}
+        showDelete={true}
+        onEdit={handleEditPost}
+        showEdit={true}
+      />
+
+      {/* Edit Post Modal */}
+      <CreatePostModal
+        open={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        postData={editingPost}
+        editMode={true}
       />
     </Box>
   );

@@ -1,11 +1,14 @@
 import { useParams } from 'react-router-dom';
 import { Container, Box, Avatar, Typography, Button, Tabs, Tab, CircularProgress } from '@mui/material';
 import { Verified, Add } from '@mui/icons-material';
-import { useState } from 'react';
+import { use, useState } from 'react';
 import { MOCK_CREATORS } from '../data/mockData';
 import { usePosts } from '../hooks/usePosts';
 import { PostCard } from '../components/feed/PostCard';
 import { useAuth } from '../contexts/AuthContext';
+import { models } from '../lib/api';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '../lib/queryClient';
 
 export const CreatorProfile = () => {
   const { username } = useParams<{ username: string }>();
@@ -31,6 +34,15 @@ export const CreatorProfile = () => {
   }
 
   const isOwnProfile = userData?.id === creator.id;
+
+
+  const deletePost = useMutation({
+    mutationFn: (postId: number) => models.deleteModelPost(postId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['modelPosts'] });
+    },
+  })
 
   return (
     <Box className="min-h-screen bg-black pt-[100px]">
@@ -120,6 +132,7 @@ export const CreatorProfile = () => {
                     <Box className="md:col-span-8">
                       {posts?.map((post : any) => (
                         <PostCard key={post.id} post={post} />
+                        
                       ))}
                       {!posts || posts.length === 0 ? (
                         <Typography variant="body1" className="text-gray-400 text-center py-8">

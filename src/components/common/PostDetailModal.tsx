@@ -12,7 +12,7 @@ import {
   Card,
   CardMedia
 } from '@mui/material';
-import { Close as CloseIcon, Lock as LockIcon, Favorite, Comment } from '@mui/icons-material';
+import { Close as CloseIcon, Lock as LockIcon, Favorite, Comment, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import type { Post } from '../../types';
 
@@ -20,13 +20,32 @@ interface PostDetailModalProps {
   open: boolean;
   onClose: () => void;
   post: Post | null;
+  onDelete?: (postId: string) => void;
+  showDelete?: boolean;
+  onEdit?: (post: Post) => void;
+  showEdit?: boolean;
 }
 
-export const PostDetailModal = ({ open, onClose, post }: PostDetailModalProps) => {
+export const PostDetailModal = ({ open, onClose, post, onDelete, showDelete = false, onEdit, showEdit = false }: PostDetailModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   console.log('post', post);
   if (!post) return null;
+
+  const handleDelete = async () => {
+    if (!onDelete || !confirm('Are you sure you want to delete this post?')) return;
+    
+    setIsDeleting(true);
+    try {
+      await onDelete(post.id);
+      onClose();
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Fallback images დროებით - უფრო მაღალი quality
   const fallbackImages = [
@@ -53,15 +72,15 @@ export const PostDetailModal = ({ open, onClose, post }: PostDetailModalProps) =
   ];
 
   // Fallback media URLs-ის მიღება
-  const getMediaUrls = () => {
-    if (post.media_urls && post.media_urls.length > 0) {
+  const getMediaUrls = (): string[] => {
+    if (post.media_urls && Array.isArray(post.media_urls) && post.media_urls.length > 0) {
       return post.media_urls;
     }
     // დროებით fallback სურათები
     return [fallbackImages[Math.floor(Math.random() * fallbackImages.length)]];
   };
 
-  const getCreatorAvatar = () => {
+  const getCreatorAvatar = (): string => {
     if (post.creator?.avatar) {
       return post.creator.avatar;
     }
@@ -395,6 +414,54 @@ export const PostDetailModal = ({ open, onClose, post }: PostDetailModalProps) =
                 >
                   Comment ({post.comments || 0})
                 </Button>
+
+                {/* Edit Button - მხოლოდ თუ პოსტი საკუთარია */}
+                {showEdit && onEdit && post && (
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<EditIcon />}
+                    onClick={() => {
+                      onEdit(post);
+                      onClose();
+                    }}
+                    sx={{
+                      borderColor: 'rgba(59, 130, 246, 0.5)',
+                      color: '#3b82f6',
+                      '&:hover': { 
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                      }
+                    }}
+                  >
+                    Edit Post
+                  </Button>
+                )}
+
+                {/* Delete Button - მხოლოდ თუ პოსტი საკუთარია */}
+                {showDelete && onDelete && (
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<DeleteIcon />}
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    sx={{
+                      borderColor: 'rgba(239, 68, 68, 0.5)',
+                      color: '#ef4444',
+                      '&:hover': { 
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)'
+                      },
+                      '&.Mui-disabled': {
+                        borderColor: 'rgba(239, 68, 68, 0.3)',
+                        color: 'rgba(239, 68, 68, 0.5)'
+                      }
+                    }}
+                  >
+                    {isDeleting ? 'Deleting...' : 'Delete Post'}
+                  </Button>
+                )}
               </Box>
             </Box>
           </Box>

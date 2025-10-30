@@ -380,6 +380,16 @@ export const models = {
       throw error;
     }
   },
+
+  getModelsSubscriptions: async () => {
+    try{
+      const response = await apiClient.get('/models/subscriptions');
+      return response;
+    } catch (error) {
+      console.error('Error getting models subscriptions:', error);
+      throw error;
+    }
+  }
 };
 
 // ძირითადი API ობიექტი

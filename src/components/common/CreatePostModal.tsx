@@ -33,6 +33,8 @@ import { showToast } from '../../utils/toast';
 interface CreatePostModalProps {
   open: boolean;
   onClose: () => void;
+  postData?: any; // Post data for edit mode
+  editMode?: boolean;
 }
 
 interface UploadedImage {
@@ -42,7 +44,7 @@ interface UploadedImage {
   uploadedUrl?: string;
 }
 
-const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose }) => {
+const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose, postData, editMode = false }) => {
   const [formData, setFormData] = useState({
     access_level: 'free',
     blurred_media_urls: [] as string[],
@@ -56,6 +58,61 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose }) => {
     title: '',
     type: 'text',
   });
+
+  // Reset form when modal closes (only if not in edit mode)
+  React.useEffect(() => {
+    if (!open && !editMode) {
+      setFormData({
+        access_level: 'free',
+        blurred_media_urls: [],
+        content: '',
+        content_visibility: 'hidden',
+        hashtags: [],
+        is_premium: false,
+        media_urls: [],
+        price: 0,
+        tags: [],
+        title: '',
+        type: 'text',
+      });
+      setUploadedImages([]);
+      setNewTag('');
+      setNewHashtag('');
+    }
+  }, [open, editMode]);
+
+  // Load post data when in edit mode
+  React.useEffect(() => {
+    console.log('useEffect triggered - open:', open, 'editMode:', editMode, 'postData:', postData);
+    if (open && editMode && postData) {
+      console.log('Loading post data for edit:', postData);
+      console.log('Post data keys:', Object.keys(postData));
+      setFormData({
+        access_level: postData.access_level || 'free',
+        blurred_media_urls: Array.isArray(postData.blurred_media_urls) ? postData.blurred_media_urls : [],
+        content: postData.content || '',
+        content_visibility: postData.content_visibility || 'hidden',
+        hashtags: Array.isArray(postData.hashtags) ? postData.hashtags : [],
+        is_premium: postData.is_premium || false,
+        media_urls: Array.isArray(postData.media_urls) ? postData.media_urls : [],
+        price: postData.unlock_price || postData.price || 0,
+        tags: Array.isArray(postData.tags) ? postData.tags : [],
+        title: postData.title || '',
+        type: postData.type || 'text',
+      });
+      
+      // Load existing images
+      if (postData.media_urls && Array.isArray(postData.media_urls) && postData.media_urls.length > 0) {
+        const existingImages: UploadedImage[] = postData.media_urls.map((url: string) => ({
+          file: new File([], 'existing-image'), // placeholder
+          preview: url,
+          blurIntensity: postData.blur_intensity || 0,
+          uploadedUrl: url
+        }));
+        setUploadedImages(existingImages);
+      }
+    }
+  }, [open, editMode, postData]);
 
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [newTag, setNewTag] = useState('');
@@ -74,6 +131,19 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose }) => {
     },
     onError: (error: any) => {
       showToast.error(error.response?.data?.message || 'Failed to create post');
+    },
+  });
+
+  const updatePostMutation = useMutation({
+    mutationFn: ({ postId, data }: { postId: number, data: any }) => models.updatePost(postId, data),
+    onSuccess: () => {
+      showToast.success('Post updated successfully!');
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['posts-with-data'] });
+      handleClose();
+    },
+    onError: (error: any) => {
+      showToast.error(error.response?.data?.message || 'Failed to update post');
     },
   });
 
@@ -207,7 +277,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose }) => {
           return img.uploadedUrl;
         });
 
-      const postData = {
+      const postDataToSend = {
         ...formData,
         media_urls: mediaUrls.filter(url => url !== undefined) as string[],
         blurred_media_urls: blurredMediaUrls.filter(url => url !== undefined) as string[],
@@ -218,7 +288,11 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose }) => {
         unlock_price: formData.price,
       };
 
-      await createPostMutation.mutateAsync(postData);
+      if (editMode && postData?.id) {
+        await updatePostMutation.mutateAsync({ postId: Number(postData.id), data: postDataToSend });
+      } else {
+        await createPostMutation.mutateAsync(postDataToSend);
+      }
     } catch (error) {
       console.error('Submit error:', error);
     } finally {
@@ -251,7 +325,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose }) => {
     >
       <DialogTitle className="flex items-center justify-between">
         <Typography variant="h6" className="text-white font-bold">
-          Create New Post
+          {editMode ? 'Edit Post' : 'Create New Post'}
         </Typography>
         <IconButton onClick={handleClose} className="text-gray-400">
           <Close />
@@ -589,7 +663,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose }) => {
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={isUploading || createPostMutation.isPending}
+          disabled={isUploading || createPostMutation.isPending || updatePostMutation.isPending}
           sx={{
             background: 'linear-gradient(135deg, #ef4444 0%, #ec4899 100%)',
             '&:hover': {
@@ -600,7 +674,9 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ open, onClose }) => {
             },
           }}
         >
-          {isUploading || createPostMutation.isPending ? 'Creating...' : 'Create Post'}
+          {isUploading || createPostMutation.isPending || updatePostMutation.isPending 
+            ? (editMode ? 'Updating...' : 'Creating...') 
+            : (editMode ? 'Update Post' : 'Create Post')}
         </Button>
       </DialogActions>
     </Dialog>

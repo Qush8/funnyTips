@@ -112,7 +112,7 @@ export const Navbar = () => {
         <Box className="flex items-center gap-2">
           {currentUser ? (
             <>
-              <Button
+              {/* <Button
                 variant="contained"
                 startIcon={<Add />}
                 onClick={() => navigate('/create-post')}
@@ -133,7 +133,7 @@ export const Navbar = () => {
                 }}
               >
                 Create Post
-              </Button>
+              </Button> */}
               <IconButton
                 sx={{
                   color: 'rgba(255,255,255,0.7)',
